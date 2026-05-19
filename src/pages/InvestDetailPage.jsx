@@ -31,7 +31,7 @@ export default function InvestDetailPage({ data, updateData }) {
   const loadApiRows = useCallback(async () => {
     try {
       const rows = await api.get(`/asset-api/stock-data?year=${year}&month=${m}`)
-      setApiRows(rows)
+      if (Array.isArray(rows)) setApiRows(rows)
     } catch {
       setApiRows([])
     }

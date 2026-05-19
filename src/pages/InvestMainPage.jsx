@@ -33,7 +33,7 @@ export default function InvestMainPage({ data, updateData }) {
   const loadPnlData = useCallback(async () => {
     try {
       const rows = await api.get(`/asset-api/stock-data?year=${year}`)
-      setPnlData(rows)
+      if (Array.isArray(rows)) setPnlData(rows)
     } catch {
       // 데이터 없으면 빈 배열 유지
     }
