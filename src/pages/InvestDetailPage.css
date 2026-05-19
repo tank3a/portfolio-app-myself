@@ -238,20 +238,83 @@
   overflow: hidden;
 }
 
+.api-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-light, #f9fafb);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .api-toggle-btn {
-  width: 100%;
   padding: 14px 18px;
   text-align: left;
-  background: var(--bg-light, #f9fafb);
+  background: none;
   border: none;
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
   cursor: pointer;
+  flex: 1;
+  min-width: 140px;
 }
 
 .api-toggle-btn:hover {
-  background: var(--border-light, #f3f4f6);
+  color: var(--color-invest);
+}
+
+.api-fetch-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  flex-wrap: wrap;
+}
+
+.api-date-input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  background: white;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.api-date-input:focus {
+  outline: none;
+  border-color: var(--color-invest);
+}
+
+.date-sep {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.api-fetch-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--color-invest);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.api-fetch-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.api-fetch-error {
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--color-expense);
+  background: #fef2f2;
+  margin: 0;
 }
 
 .api-data-content {

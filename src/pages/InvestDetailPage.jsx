@@ -22,6 +22,13 @@ export default function InvestDetailPage({ data, updateData }) {
   const m = Number(month)
   const unit = data.settings.investUnit
 
+  const today = new Date().toISOString().slice(0, 10)
+  const monthStart = `${year}-${String(m).padStart(2, '0')}-01`
+  const [fetchFrom, setFetchFrom] = useState(monthStart)
+  const [fetchTo, setFetchTo] = useState(today)
+  const [fetchLoading, setFetchLoading] = useState(false)
+  const [fetchError, setFetchError] = useState('')
+
   useEffect(() => {
     if (!data.investment?.[year]?.[String(m)]) {
       updateData(prev => ensureInvestMonth(prev, year, m))
@@ -40,6 +47,20 @@ export default function InvestDetailPage({ data, updateData }) {
   useEffect(() => {
     if (showApiData) loadApiRows()
   }, [showApiData, loadApiRows])
+
+  async function handleFetchNow() {
+    setFetchLoading(true)
+    setFetchError('')
+    try {
+      await api.post('/asset-api/fetch-now', { fromDate: fetchFrom, toDate: fetchTo })
+      setShowApiData(true)
+      await loadApiRows()
+    } catch {
+      setFetchError('데이터를 가져오지 못했습니다.')
+    } finally {
+      setFetchLoading(false)
+    }
+  }
 
   const im = useMemo(() => {
     return data.investment?.[year]?.[String(m)] || {}
@@ -145,7 +166,7 @@ export default function InvestDetailPage({ data, updateData }) {
     return Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b))
   }
 
-  function extractAmount(raw, dataType) {
+  function extractAmount(raw) {
     if (!raw) return null
     if (raw.placeholder) return null
     return Number(raw.total ?? raw.amount ?? raw.balance ?? 0)
@@ -272,12 +293,37 @@ export default function InvestDetailPage({ data, updateData }) {
         )
       })}
       <div className="api-data-section">
-        <button
-          className="api-toggle-btn"
-          onClick={() => setShowApiData(v => !v)}
-        >
-          {showApiData ? '▲' : '▼'} API 연동 데이터
-        </button>
+        <div className="api-section-header">
+          <button
+            className="api-toggle-btn"
+            onClick={() => setShowApiData(v => !v)}
+          >
+            {showApiData ? '▲' : '▼'} API 연동 데이터
+          </button>
+          <div className="api-fetch-controls">
+            <input
+              type="date"
+              className="api-date-input"
+              value={fetchFrom}
+              onChange={e => setFetchFrom(e.target.value)}
+            />
+            <span className="date-sep">~</span>
+            <input
+              type="date"
+              className="api-date-input"
+              value={fetchTo}
+              onChange={e => setFetchTo(e.target.value)}
+            />
+            <button
+              className="api-fetch-btn"
+              onClick={handleFetchNow}
+              disabled={fetchLoading}
+            >
+              {fetchLoading ? '가져오는 중...' : '지금 가져오기'}
+            </button>
+          </div>
+        </div>
+        {fetchError && <p className="api-fetch-error">{fetchError}</p>}
 
         {showApiData && (
           <div className="api-data-content">
@@ -288,7 +334,8 @@ export default function InvestDetailPage({ data, updateData }) {
                 <thead>
                   <tr>
                     <th>날짜</th>
-                    <th>주식잔고</th>
+                    <th>국내잔고</th>
+                    <th>해외잔고</th>
                     <th>국내매매손익</th>
                     <th>해외매매손익</th>
                     <th>배당</th>
@@ -297,27 +344,29 @@ export default function InvestDetailPage({ data, updateData }) {
                 </thead>
                 <tbody>
                   {buildDailyApiTable().map(([date, types]) => {
-                    const pnlKR = extractAmount(types.TRADE_PNL_KR, 'TRADE_PNL_KR')
-                    const pnlOS = extractAmount(types.TRADE_PNL_OVERSEAS, 'TRADE_PNL_OVERSEAS')
-                    const dividend = extractAmount(types.DIVIDEND, 'DIVIDEND')
-                    const txn = extractAmount(types.TRANSACTION, 'TRANSACTION')
-                    const balance = extractAmount(types.BALANCE, 'BALANCE')
+                    const balKR = extractAmount(types.BALANCE_KR)
+                    const balOS = extractAmount(types.BALANCE_OVERSEAS)
+                    const pnlKR = extractAmount(types.TRADE_PNL_KR)
+                    const pnlOS = extractAmount(types.TRADE_PNL_OVERSEAS)
+                    const dividend = extractAmount(types.DIVIDEND)
+                    const txn = extractAmount(types.TRANSACTION)
 
-                    const fmt = (val) => {
+                    const fmtBalance = (val) => val !== null ? `${formatAmount(val, unit)}${unit}` : '-'
+                    const fmtPnl = (val) => {
                       if (val === null) return '-'
-                      const prefix = val > 0 ? '+' : ''
-                      return `${prefix}${formatAmount(val, unit)}${unit}`
+                      return `${val > 0 ? '+' : ''}${formatAmount(val, unit)}${unit}`
                     }
                     const colorClass = (val) => val === null ? '' : val > 0 ? 'pos' : val < 0 ? 'neg' : ''
 
                     return (
                       <tr key={date}>
                         <td className="date-cell">{date}</td>
-                        <td>{balance !== null ? `${formatAmount(balance, unit)}${unit}` : '-'}</td>
-                        <td className={colorClass(pnlKR)}>{fmt(pnlKR)}</td>
-                        <td className={colorClass(pnlOS)}>{fmt(pnlOS)}</td>
-                        <td className={colorClass(dividend)}>{fmt(dividend)}</td>
-                        <td className={colorClass(txn)}>{fmt(txn)}</td>
+                        <td>{fmtBalance(balKR)}</td>
+                        <td>{fmtBalance(balOS)}</td>
+                        <td className={colorClass(pnlKR)}>{fmtPnl(pnlKR)}</td>
+                        <td className={colorClass(pnlOS)}>{fmtPnl(pnlOS)}</td>
+                        <td className={colorClass(dividend)}>{fmtPnl(dividend)}</td>
+                        <td className={colorClass(txn)}>{fmtPnl(txn)}</td>
                       </tr>
                     )
                   })}

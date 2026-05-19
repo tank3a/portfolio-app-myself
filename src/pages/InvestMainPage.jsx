@@ -26,7 +26,6 @@ export default function InvestMainPage({ data, updateData }) {
   const topCats = data.investTopCategories || []
   const [pnlMode, setPnlMode] = useState('monthly')
   const [pnlData, setPnlData] = useState([])
-  const [fetchStatus, setFetchStatus] = useState({ loading: false, lastFetched: null, error: '' })
 
   const headerAmounts = getInvestmentByCategory(data, year, lastMonth)
 
@@ -40,17 +39,6 @@ export default function InvestMainPage({ data, updateData }) {
   }, [year])
 
   useEffect(() => { loadPnlData() }, [loadPnlData])
-
-  async function handleFetchNow() {
-    setFetchStatus(s => ({ ...s, loading: true, error: '' }))
-    try {
-      await api.post('/asset-api/fetch-now')
-      setFetchStatus({ loading: false, lastFetched: new Date(), error: '' })
-      await loadPnlData()
-    } catch {
-      setFetchStatus(s => ({ ...s, loading: false, error: '가져오기 실패' }))
-    }
-  }
 
   function buildPnlMonthly() {
     const monthly = {}
@@ -121,21 +109,10 @@ export default function InvestMainPage({ data, updateData }) {
         <h1>투자</h1>
         <div className="header-right">
           <button className="settings-btn" onClick={() => navigate('/invest/settings')}>API 설정</button>
-          <button
-            className="fetch-btn"
-            onClick={handleFetchNow}
-            disabled={fetchStatus.loading}
-          >
-            {fetchStatus.loading ? '가져오는 중...' : '지금 가져오기'}
-          </button>
           <button className="add-cat-btn" onClick={handleAddCategory}>+ 카테고리</button>
           <UnitSelector unit={unit} onChange={u => updateData(prev => ({ ...prev, settings: { ...prev.settings, investUnit: u } }))} />
         </div>
       </div>
-      {fetchStatus.error && <div className="fetch-error">{fetchStatus.error}</div>}
-      {fetchStatus.lastFetched && (
-        <div className="fetch-success">마지막 수집: {fetchStatus.lastFetched.toLocaleTimeString('ko-KR')}</div>
-      )}
 
       <div className="summary-cards">
         {topCats.map((cat, i) => (
