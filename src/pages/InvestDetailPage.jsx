@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { formatAmount, CURRENT_YEAR } from '../utils/calculations'
+import { api } from '../utils/apiClient'
 import {
   ensureInvestMonth, addInvestTopCategory, removeInvestTopCategory,
   addInvestSubCategory, removeInvestSubCategory,
@@ -15,6 +16,8 @@ export default function InvestDetailPage({ data, updateData }) {
   const { month } = useParams()
   const navigate = useNavigate()
   const [editMode, setEditMode] = useState(false)
+  const [showApiData, setShowApiData] = useState(false)
+  const [apiRows, setApiRows] = useState([])
   const year = CURRENT_YEAR
   const m = Number(month)
   const unit = data.settings.investUnit
@@ -24,6 +27,19 @@ export default function InvestDetailPage({ data, updateData }) {
       updateData(prev => ensureInvestMonth(prev, year, m))
     }
   }, [year, m]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadApiRows = useCallback(async () => {
+    try {
+      const rows = await api.get(`/asset-api/stock-data?year=${year}&month=${m}`)
+      setApiRows(rows)
+    } catch {
+      setApiRows([])
+    }
+  }, [year, m])
+
+  useEffect(() => {
+    if (showApiData) loadApiRows()
+  }, [showApiData, loadApiRows])
 
   const im = useMemo(() => {
     return data.investment?.[year]?.[String(m)] || {}
@@ -117,6 +133,22 @@ export default function InvestDetailPage({ data, updateData }) {
   function handleRemoveTopCat(topCat) {
     if (!window.confirm(`"${topCat}" 카테고리를 ${m}월 이후 모든 월에서 삭제하시겠습니까?`)) return
     updateData(prev => removeInvestTopCategory(prev, year, m, topCat))
+  }
+
+  function buildDailyApiTable() {
+    const byDate = {}
+    for (const row of apiRows) {
+      const d = row.snapshot_date.slice(0, 10)
+      if (!byDate[d]) byDate[d] = {}
+      byDate[d][row.data_type] = row.raw_data
+    }
+    return Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b))
+  }
+
+  function extractAmount(raw, dataType) {
+    if (!raw) return null
+    if (raw.placeholder) return null
+    return Number(raw.total ?? raw.amount ?? raw.balance ?? 0)
   }
 
   function getCatTotal(topCat) {
@@ -239,6 +271,62 @@ export default function InvestDetailPage({ data, updateData }) {
           </div>
         )
       })}
+      <div className="api-data-section">
+        <button
+          className="api-toggle-btn"
+          onClick={() => setShowApiData(v => !v)}
+        >
+          {showApiData ? '▲' : '▼'} API 연동 데이터
+        </button>
+
+        {showApiData && (
+          <div className="api-data-content">
+            {buildDailyApiTable().length === 0 ? (
+              <p className="api-empty">이 달의 API 수집 데이터가 없습니다.</p>
+            ) : (
+              <table className="api-daily-table">
+                <thead>
+                  <tr>
+                    <th>날짜</th>
+                    <th>주식잔고</th>
+                    <th>국내매매손익</th>
+                    <th>해외매매손익</th>
+                    <th>배당</th>
+                    <th>입출금</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {buildDailyApiTable().map(([date, types]) => {
+                    const pnlKR = extractAmount(types.TRADE_PNL_KR, 'TRADE_PNL_KR')
+                    const pnlOS = extractAmount(types.TRADE_PNL_OVERSEAS, 'TRADE_PNL_OVERSEAS')
+                    const dividend = extractAmount(types.DIVIDEND, 'DIVIDEND')
+                    const txn = extractAmount(types.TRANSACTION, 'TRANSACTION')
+                    const balance = extractAmount(types.BALANCE, 'BALANCE')
+
+                    const fmt = (val) => {
+                      if (val === null) return '-'
+                      const prefix = val > 0 ? '+' : ''
+                      return `${prefix}${formatAmount(val, unit)}${unit}`
+                    }
+                    const colorClass = (val) => val === null ? '' : val > 0 ? 'pos' : val < 0 ? 'neg' : ''
+
+                    return (
+                      <tr key={date}>
+                        <td className="date-cell">{date}</td>
+                        <td>{balance !== null ? `${formatAmount(balance, unit)}${unit}` : '-'}</td>
+                        <td className={colorClass(pnlKR)}>{fmt(pnlKR)}</td>
+                        <td className={colorClass(pnlOS)}>{fmt(pnlOS)}</td>
+                        <td className={colorClass(dividend)}>{fmt(dividend)}</td>
+                        <td className={colorClass(txn)}>{fmt(txn)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

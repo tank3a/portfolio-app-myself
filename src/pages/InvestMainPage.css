@@ -113,3 +113,83 @@
   font-size: 13px;
   cursor: pointer;
 }
+
+.settings-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.fetch-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--color-invest, #8b5cf6);
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.fetch-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fetch-error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+}
+
+.fetch-success {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #16a34a;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+}
+
+.pnl-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pnl-header h2 {
+  margin: 0;
+  flex: 1;
+  font-size: 16px;
+}
+
+.pnl-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pnl-toggle button {
+  padding: 4px 14px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pnl-toggle button.active {
+  background: var(--color-invest, #8b5cf6);
+  color: white;
+}

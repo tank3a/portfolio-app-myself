@@ -229,3 +229,84 @@
   font-size: 11px;
   line-height: 1;
 }
+
+/* API 연동 데이터 섹션 */
+.api-data-section {
+  margin-top: 32px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.api-toggle-btn {
+  width: 100%;
+  padding: 14px 18px;
+  text-align: left;
+  background: var(--bg-light, #f9fafb);
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.api-toggle-btn:hover {
+  background: var(--border-light, #f3f4f6);
+}
+
+.api-data-content {
+  padding: 0 4px 16px;
+  overflow-x: auto;
+}
+
+.api-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 24px 0;
+}
+
+.api-daily-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 600px;
+}
+
+.api-daily-table th {
+  text-align: right;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.api-daily-table th:first-child {
+  text-align: left;
+}
+
+.api-daily-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-light);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.api-daily-table td.date-cell {
+  text-align: left;
+  font-family: monospace;
+  color: var(--text-muted);
+}
+
+.api-daily-table td.pos {
+  color: #16a34a;
+}
+
+.api-daily-table td.neg {
+  color: #dc2626;
+}
+
+.api-daily-table tr:last-child td {
+  border-bottom: none;
+}

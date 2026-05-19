@@ -6,6 +6,7 @@ import BudgetMainPage from './pages/BudgetMainPage'
 import BudgetDetailPage from './pages/BudgetDetailPage'
 import InvestMainPage from './pages/InvestMainPage'
 import InvestDetailPage from './pages/InvestDetailPage'
+import InvestSettingsPage from './pages/InvestSettingsPage'
 import HelpModal from './components/HelpModal'
 import './App.css'
 import './components/HelpModal.css'
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/budget/:month" element={<BudgetDetailPage data={data} updateData={updateData} />} />
         <Route path="/invest" element={<InvestMainPage data={data} updateData={updateData} />} />
         <Route path="/invest/:month" element={<InvestDetailPage data={data} updateData={updateData} />} />
+        <Route path="/invest/settings" element={<InvestSettingsPage />} />
       </Routes>
       <button className="help-btn" onClick={() => setShowHelp(true)}>?</button>
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
