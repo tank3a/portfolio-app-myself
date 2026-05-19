@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../utils/apiClient'
+import { api, tokenStore } from '../utils/apiClient'
 import './InvestSettingsPage.css'
 
 const PROVIDERS = ['KIS', 'SAMSUNG']
@@ -14,6 +14,9 @@ export default function InvestSettingsPage() {
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [token, setToken] = useState(tokenStore.get())
+  const [tokenInput, setTokenInput] = useState(tokenStore.get())
+  const [tokenSaved, setTokenSaved] = useState(false)
 
   async function fetchKeys() {
     try {
@@ -60,6 +63,44 @@ export default function InvestSettingsPage() {
       </div>
 
       {error && <div className="error-banner">{error}</div>}
+
+      <div className="section token-section">
+        <h2>API 인증 토큰</h2>
+        <p className="token-desc">EC2 서버의 <code>.env</code>에 설정된 <code>ASSET_API_TOKEN</code> 값을 입력하세요. 브라우저 localStorage에만 저장됩니다.</p>
+        <div className="token-row">
+          <input
+            type="password"
+            className="token-input"
+            placeholder="토큰 입력"
+            value={tokenInput}
+            onChange={e => setTokenInput(e.target.value)}
+          />
+          <button
+            className="token-save-btn"
+            onClick={() => {
+              tokenStore.set(tokenInput)
+              setToken(tokenInput)
+              setTokenSaved(true)
+              setTimeout(() => setTokenSaved(false), 2000)
+            }}
+          >저장</button>
+          {token && (
+            <button
+              className="token-clear-btn"
+              onClick={() => {
+                tokenStore.clear()
+                setToken('')
+                setTokenInput('')
+              }}
+            >초기화</button>
+          )}
+        </div>
+        {token
+          ? <p className="token-status set">토큰 설정됨 ({token.slice(0, 8)}...)</p>
+          : <p className="token-status unset">토큰 미설정 — API 호출이 차단됩니다.</p>
+        }
+        {tokenSaved && <p className="token-status set">저장되었습니다.</p>}
+      </div>
 
       <div className="section">
         <div className="section-header">
