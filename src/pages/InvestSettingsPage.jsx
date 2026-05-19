@@ -21,7 +21,11 @@ export default function InvestSettingsPage() {
   async function fetchKeys() {
     try {
       const data = await api.get('/asset-api/api-keys')
-      setKeys(data)
+      if (Array.isArray(data)) {
+        setKeys(data)
+      } else {
+        setError(data?.error || 'API 키 목록을 불러오지 못했습니다. 토큰을 먼저 설정해주세요.')
+      }
     } catch {
       setError('API 키 목록을 불러오지 못했습니다.')
     }
