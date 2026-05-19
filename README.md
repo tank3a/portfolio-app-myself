@@ -33,15 +33,23 @@
 
 > File System Access API는 **Chrome / Edge** 기반 브라우저에서만 지원됩니다.
 
+## 증권 API 인증
+
+`/asset-api/*` 엔드포인트는 Bearer 토큰으로 보호됩니다. 토큰은 EC2 서버의 `.env`(`ASSET_API_TOKEN`)에 저장되며, 앱에서는 다음 순서로 설정합니다.
+
+1. `/invest/settings` 페이지 접속
+2. "API 인증 토큰" 섹션에 토큰 입력 후 저장
+3. 브라우저 `localStorage`에 저장되어 이후 모든 API 호출에 자동 포함
+
+토큰은 소스코드·git에 포함되지 않습니다.
+
 ## 환경변수
 
-백엔드 API URL은 환경변수로 관리합니다. 기본값은 `https://ai.tank3a.store`이며, 로컬 개발 시 `.env.local` 파일로 오버라이드 가능합니다.
+백엔드 API URL 기본값은 `https://ai.tank3a.store`입니다. 로컬 개발 시 `.env.local`로 오버라이드 가능합니다.
 
 ```
 VITE_API_BASE_URL=https://ai.tank3a.store
 ```
-
-GitHub Actions 배포 시 repository secret `VITE_API_BASE_URL`을 설정해야 합니다.
 
 ## 로컬 실행
 
